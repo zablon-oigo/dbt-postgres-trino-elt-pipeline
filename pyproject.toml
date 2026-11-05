@@ -6,4 +6,5 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "dbt>=2.0.9",
+    "dbt-trino==1.10.3",
 ]
