@@ -7,5 +7,6 @@ requires-python = ">=3.12"
 dependencies = [
     "dbt>=2.0.9",
     "dbt-trino==1.10.3",
+    "setuptools>=84.2.1",
     "soda-core-trino>=3.5.6",
 ]
