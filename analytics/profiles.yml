@@ -1,0 +1,13 @@
+elt:
+  target: dev
+
+  outputs:
+    dev:
+      type: trino
+      method: none
+      user: admin
+      host: localhost
+      port: 8080
+      database: source
+      schema: analytics_db
+      threads: 4
