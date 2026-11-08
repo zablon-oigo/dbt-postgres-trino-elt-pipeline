@@ -1,0 +1,70 @@
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: elt-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${SOURCE_DB}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./data/raw/sample.sql:/docker-entrypoint-initdb.d/01-sample.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+
+  trino:
+    image: trinodb/trino:484
+    container_name: elt-trino
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./trino/catalog:/etc/trino/catalog:ro
+
+
+  superset:
+    build:
+      context: ./superset
+    container_name: elt-superset
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      trino:
+        condition: service_started
+    environment:
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SUPERSET_ADMIN: ${SUPERSET_ADMIN}
+      SUPERSET_ADMIN_PASSWORD: ${SUPERSET_ADMIN_PASSWORD}
+      SUPERSET_ADMIN_EMAIL: admin@example.com
+      SQLALCHEMY_DATABASE_URI: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${ANALYTICS_DB}
+      TRINO_HOST: trino
+      TRINO_PORT: 8080
+      TRINO_CATALOG: analytics
+      TRINO_USER: ${TRINO_USER}
+    ports:
+      - "8088:8088"
+    volumes:
+      - superset_home:/app/superset_home
+    entrypoint: ["/bin/sh", "/app/init_superset.sh"]
+
+
+volumes:
+  mysql_data:
+  superset_home:
