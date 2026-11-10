@@ -1,0 +1,109 @@
+version: 2
+
+sources:
+  - name: sales
+    description: "Classicmodels sample database (source system)"
+    database: source          
+    schema: sales            
+    tables:
+      - name: customers
+        description: "Customer master data"
+        columns:
+          - name: customerNumber
+            description: "Primary key"
+            tests:
+              - unique
+              - not_null
+          - name: customerName
+            tests:
+              - not_null
+          - name: salesRepEmployeeNumber
+            description: "FK to employees"
+
+      - name: employees
+        description: "Employee and reporting hierarchy"
+        columns:
+          - name: employeeNumber
+            tests:
+              - unique
+              - not_null
+          - name: officeCode
+            tests:
+              - not_null
+
+      - name: offices
+        description: "Sales office locations"
+        columns:
+          - name: officeCode
+            tests:
+              - unique
+              - not_null
+
+      - name: orders
+        description: "Sales orders header"
+        columns:
+          - name: orderNumber
+            tests:
+              - unique
+              - not_null
+          - name: customerNumber
+            tests:
+              - not_null
+          - name: status
+            tests:
+              - accepted_values:
+                  values: ['Shipped', 'Resolved', 'Cancelled', 'On Hold', 'Disputed', 'In Process']
+
+      - name: orderdetails
+        description: "Order line items"
+        columns:
+          - name: orderNumber
+            tests:
+              - not_null
+          - name: productCode
+            tests:
+              - not_null
+          - name: quantityOrdered
+            tests:
+              - not_null
+          - name: priceEach
+            tests:
+              - not_null
+
+      - name: payments
+        description: "Customer payments"
+        columns:
+          - name: customerNumber
+            tests:
+              - not_null
+          - name: checkNumber
+            tests:
+              - not_null
+          - name: amount
+            tests:
+              - not_null
+
+      - name: productlines
+        description: "Product line categories"
+        columns:
+          - name: productLine
+            tests:
+              - unique
+              - not_null
+
+      - name: products
+        description: "Product catalog"
+        columns:
+          - name: productCode
+            tests:
+              - unique
+              - not_null
+          - name: productLine
+            tests:
+              - not_null
+          - name: buyPrice
+            tests:
+              - not_null
+          - name: MSRP
+            tests:
+              - not_null
